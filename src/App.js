@@ -1,42 +1,35 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { useFilters } from "react-table";
 import axios from "axios";
-import "./App.css";
 import Table from "./Table";
-// Custom component to render Genres 
-const Genres = ({ values }) => {
-  // Loop through the array and create a badge-like component instead of a comma-separated string
-  return (
-    <>
-      {values.map((genre, idx) => {
-        return (
-          <span key={idx} className="badge">
-            {genre}
-          </span>
-        );
-      })}
-    </>
-  );
-};
-
+import "./App.css";
 function App() {
-  const [data, setData] = useState([]);
-  const [filterInput, setFilterInput] = useState("");
-  
+ // data state to store the TV Maze API data. Its initial value is an empty array
+ const [data, setData] = useState([]);
 
- const handleFilterChange = (e) => {
-   const value = e.target.value || undefined;
- // Update the show.name filter. Now our table will filter and show only the rows which have a matching value
-   setFilterInput(value);
- };
-  // Using useEffect to call the API once mounted and set the data
-  useEffect(() => {
-    (async () => {
-      const result = await axios("https://api.tvmaze.com/search/shows?q=snow");
-      setData(result.data);
-    })();
-  }, []);
-  console.log(data)
+ // Using useEffect to call the API once mounted and set the data
+ useEffect(() => {
+   (async () => {
+     const result = await axios("https://api.tvmaze.com/search/shows?q=snow");
+     setData(result.data);
+   })();
+ }, []);
+
+  const Genres = ({ values }) => {
+    // Loop through the array and create a badge-like component instead of a comma-separated string
+    return (
+      <>
+        {values.map((genre, idx) => {
+          return (
+            <span key={idx} className="badge">
+              {genre}
+            </span>
+          );
+        })}
+      </>
+    );
+  };
+
+
   const columns = useMemo(
     () => [
       {
@@ -46,31 +39,32 @@ function App() {
         columns: [
           {
             Header: "Name",
-            accessor: "show.name",
+            accessor: "show.name"
           },
           {
             Header: "Type",
-            accessor: "show.type",
-          },
-        ],
+            accessor: "show.type"
+          }
+        ]
       },
+  
       {
-        // Second group - Details
         Header: "Details",
-        // Second group columns
         columns: [
           {
             Header: "Language",
-            accessor: "show.language",
+            accessor: "show.language"
           },
           {
             Header: "Genre(s)",
             accessor: "show.genres",
-            // Cell: ({ cell: { value } }) => <Genres values={value} />,
+            // Cell method will provide the cell value; we pass it to render a custom component
+            Cell: ({ cell: { value } }) => <Genres values={value} />
           },
           {
             Header: "Runtime",
             accessor: "show.runtime",
+            // Cell method will provide the value of the cell; we can create a custom element for the Cell        
             Cell: ({ cell: { value } }) => {
               const hour = Math.floor(value / 60);
               const min = Math.floor(value % 60);
@@ -81,30 +75,18 @@ function App() {
                 </>
               );
             }
-          
-          },
-          {
-            Header: "Status",
-            accessor: "show.status",
-          },
-        ],
-      },
+            }
     ],
-    []
-  );
   
- 
+  },
+],[]
+  );
 
   return (
     <div className="App">
-      <input
-        value={filterInput}
-        onChange={handleFilterChange}
-        placeholder={"Search name"}
-      />
       <Table columns={columns} data={data} />
     </div>
   );
-}
 
+  }
 export default App;
